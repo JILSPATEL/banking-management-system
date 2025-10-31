@@ -33,7 +33,8 @@ label1:
     strcpy(password, readBuffer);
 
 
-    if(loginEmployee(connectionFD, empID, password))
+    int empLoginResult = loginEmployee(connectionFD, empID, password);
+    if(empLoginResult == 1)
     {
         bzero(writeBuffer, sizeof(writeBuffer));
         bzero(readBuffer, sizeof(readBuffer));
@@ -121,10 +122,17 @@ label1:
     {
         bzero(writeBuffer, sizeof(writeBuffer));
         bzero(readBuffer, sizeof(readBuffer));
-        strcpy(writeBuffer, "\nInvalid ID or Password^");
-        write(connectionFD, writeBuffer, sizeof(writeBuffer));
-        read(connectionFD, readBuffer, sizeof(readBuffer));
-        goto label1;
+        if (empLoginResult == 3) {
+            strcpy(writeBuffer, "\nYou are login in other terminal^");
+            write(connectionFD, writeBuffer, sizeof(writeBuffer));
+            read(connectionFD, readBuffer, sizeof(readBuffer));
+            return; // Redirect to main login menu
+        } else {
+            strcpy(writeBuffer, "\nInvalid Credential^");
+            write(connectionFD, writeBuffer, sizeof(writeBuffer));
+            read(connectionFD, readBuffer, sizeof(readBuffer));
+            return; // redirect to main menu
+        }
     }
 }
 
@@ -145,7 +153,7 @@ int loginEmployee(int connectionFD, int empID, char *password)
             perror("sem_trywait failed");
         }
         close(file);
-        return 0;
+        return 3; // already logged in elsewhere
     }
 
     lseek(file, 0, SEEK_CUR);
@@ -335,7 +343,7 @@ void approveRejectLoan(int connectionFD, int empID)
                 printf("%d approved loan for account number: %d\n", empID, cs.accountNumber);
 
                 bzero(transactionBuffer, sizeof(transactionBuffer));
-                sprintf(transactionBuffer, "%d credited by loan id %d at %02d:%02d:%02d %d-%d-%d\n", ld.loanAmount, lID, current_time->tm_hour, current_time->tm_min,current_time->tm_sec, (current_time->tm_year)+1900, (current_time->tm_mon)+1, current_time->tm_mday);
+                sprintf(transactionBuffer, "%d credited by loan id %d at %02d:%02d:%02d %d-%d-%d\n", ld.loanAmount, lID, current_time->tm_hour, current_time->tm_min,current_time->tm_sec, (current_time->tm_year)+1900, (current_time->tm_mon)+1, (current_time->tm_mday));
             
                 bzero(th.hist, sizeof(th.hist));
                 strcpy(th.hist, transactionBuffer);
@@ -498,3 +506,5 @@ int changeEMPPassword(int connectionFD, int empID)
     printf("Employee %d changed password\n", empID);
     return 1;
 }
+
+

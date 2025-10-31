@@ -5,7 +5,8 @@ void assignLoanApplication(int connectionFD);
 void readFeedBack(int connectionFD);
 int changeMNGPassword(int connectionFD, int mngID);
 
-char readBuffer[4096], writeBuffer[4096];   
+// Shared buffers are defined once in server.c
+extern char readBuffer[4096], writeBuffer[4096];   
 
 void managerMenu(int connectionFD)
 {
@@ -39,7 +40,8 @@ label1:
     //     return;
     // }
 
-    if(loginManager(connectionFD, mngID, password))
+    int mngLoginResult = loginManager(connectionFD, mngID, password);
+    if(mngLoginResult == 1)
     {
         bzero(writeBuffer, sizeof(writeBuffer));
         bzero(readBuffer, sizeof(readBuffer));
@@ -112,10 +114,17 @@ label1:
     {
         bzero(writeBuffer, sizeof(writeBuffer));
         bzero(readBuffer, sizeof(readBuffer));
-        strcpy(writeBuffer, "\nInvalid ID or Password^");
-        write(connectionFD, writeBuffer, sizeof(writeBuffer));
-        read(connectionFD, readBuffer, sizeof(readBuffer));
-        goto label1;
+        if (mngLoginResult == 3) {
+            strcpy(writeBuffer, "\nYou are login in other terminal^");
+            write(connectionFD, writeBuffer, sizeof(writeBuffer));
+            read(connectionFD, readBuffer, sizeof(readBuffer));
+            return; // Redirect to main login menu
+        } else {
+            strcpy(writeBuffer, "\nInvalid Credential^");
+            write(connectionFD, writeBuffer, sizeof(writeBuffer));
+            read(connectionFD, readBuffer, sizeof(readBuffer));
+            return; // redirect to main menu
+        }
     }
 }
 
@@ -141,7 +150,7 @@ int loginManager(int connectionFD, int mngID, char *password)
             perror("sem_trywait failed");
         }
         close(file);
-        return 0;
+        return 3; // already logged in elsewhere
     }
 
     lseek(file, 0, SEEK_SET);
@@ -427,5 +436,6 @@ int changeMNGPassword(int connectionFD, int mngID)
 
     printf("Manager %d changed password\n", mngID);
     return 1;
-
 }
+
+

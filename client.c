@@ -1,6 +1,7 @@
 #include<sys/types.h>
 #include<sys/socket.h>
 #include<netinet/ip.h>
+#include<arpa/inet.h>
 #include<stdio.h>
 #include<unistd.h>
 #include<stdlib.h>
@@ -26,7 +27,8 @@ void main()
     }
     printf("Client side socket successfully created!\n");
 
-    address.sin_addr.s_addr = htonl(INADDR_ANY);
+    // Connect to localhost server
+    address.sin_addr.s_addr = inet_addr("127.0.0.1");
     address.sin_family = AF_INET;
     address.sin_port = htons(8080);
 
@@ -97,7 +99,9 @@ void connectionHandler(int socketFileDescriptor)
                 }                
             }
             
-            writeBytes = write(socketFileDescriptor, writeBuffer, sizeof(writeBuffer));
+            // send only actual content length (+1 for terminating null where expected)
+            size_t to_send = strlen(writeBuffer) + 1;
+            writeBytes = write(socketFileDescriptor, writeBuffer, to_send);
             if(writeBytes == -1)
             {
                 printf("Unable to write to server\n");

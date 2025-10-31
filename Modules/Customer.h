@@ -19,7 +19,8 @@ int changePassword(int connectionFD, int accountNumber);
 void logout(int connectionFD, int id);
 
 int writeBytes, readBytes, key, loginOffset;
-char readBuffer[4096], writeBuffer[4096];
+// Shared buffers are defined once in server.c
+extern char readBuffer[4096], writeBuffer[4096];
 
 
 
@@ -69,7 +70,8 @@ label1:
         readBytes = read(connectionFD, readBuffer, sizeof(readBuffer));
         strcpy(password, readBuffer);
 
-        if (loginCustomer(connectionFD, accountNumber, password))
+        int loginResultFirst = loginCustomer(connectionFD, accountNumber, password);
+        if (loginResultFirst == 1)
         {            
             while(1)
             {   
@@ -168,14 +170,26 @@ label1:
                 }
             }
         }
-        else
-        {
+        else {
+            int loginResult = loginResultFirst;
             bzero(writeBuffer, sizeof(writeBuffer));
             bzero(readBuffer, sizeof(readBuffer));
-            strcpy(writeBuffer, "\nInvalid ID or Password^");
+            if (loginResult == 2) {
+                strcpy(writeBuffer, "\nYour account is deactivated. Returning to main menu...^");
+                write(connectionFD, writeBuffer, sizeof(writeBuffer));
+                read(connectionFD, readBuffer, sizeof(readBuffer));
+                return; // Return to main menu after deactivation message
+            } else if (loginResult == 3) {
+                strcpy(writeBuffer, "\nYou are login in other terminal^");
+                write(connectionFD, writeBuffer, sizeof(writeBuffer));
+                read(connectionFD, readBuffer, sizeof(readBuffer));
+                return; // Redirect to main login menu
+            } else {
+                strcpy(writeBuffer, "\nInvalid Credential^");
+            }
             write(connectionFD, writeBuffer, sizeof(writeBuffer));
             read(connectionFD, readBuffer, sizeof(readBuffer));
-            goto label1;
+            return; // redirect to main menu
         }
     }
 }
@@ -210,17 +224,21 @@ int loginCustomer(int connectionFD, int accountNumber, char *password) {
         }
         sem_close(cust_sema);
         close(file);
-        return 0;
+        return 3; // already logged in elsewhere
     }
 
     // Verify credentials
     int valid = 0;
+    int deactivated = 0;
     lseek(file, 0, SEEK_SET);
     while (read(file, &customer, sizeof(customer)) == sizeof(customer)) {
         if (customer.accountNumber == accountNumber &&
-            strcmp(customer.password, crypt(password, HASHKEY)) == 0 &&
-            customer.activeStatus == 1) {
-            valid = 1;
+            strcmp(customer.password, crypt(password, HASHKEY)) == 0) {
+            if (customer.activeStatus == 1) {
+                valid = 1;
+            } else {
+                deactivated = 1;
+            }
             break;
         }
     }
@@ -232,6 +250,9 @@ int loginCustomer(int connectionFD, int accountNumber, char *password) {
         sem_post(cust_sema);
         sem_close(cust_sema);
         sem_unlink(semName);
+        if (deactivated) {
+            return 2; // account exists but is deactivated
+        }
         return 0;
     }
 
@@ -306,7 +327,7 @@ void depositMoney(int connectionFD, int accountNumber){
             customer.balance += depositAmount;
             
             bzero(transactionBuffer, sizeof(transactionBuffer));
-            sprintf(transactionBuffer, "%.2f deposited at %02d:%02d:%02d %d-%d-%d\n", depositAmount, current_time->tm_hour, current_time->tm_min,current_time->tm_sec, (current_time->tm_year)+1900, (current_time->tm_mon)+1, current_time->tm_mday);
+            sprintf(transactionBuffer, "%.2f deposited at %02d:%02d:%02d %d-%d-%d\n", depositAmount, current_time->tm_hour, current_time->tm_min,current_time->tm_sec, (current_time->tm_year)+1900, (current_time->tm_mon)+1, (current_time->tm_mday));
             
             bzero(th.hist, sizeof(th.hist));
             strcpy(th.hist, transactionBuffer);
@@ -452,7 +473,7 @@ void withdrawMoney(int connectionFD, int accountNumber){
             customer.balance -= withdrawAmount;
 
             bzero(transactionBuffer, sizeof(transactionBuffer));
-            sprintf(transactionBuffer, "%.2f withdraw at %02d:%02d:%02d %d-%d-%d\n", withdrawAmount, current_time->tm_hour, current_time->tm_min,current_time->tm_sec, (current_time->tm_year)+1900, (current_time->tm_mon)+1, current_time->tm_mday);
+            sprintf(transactionBuffer, "%.2f withdraw at %02d:%02d:%02d %d-%d-%d\n", withdrawAmount, current_time->tm_hour, current_time->tm_min,current_time->tm_sec, (current_time->tm_year)+1900, (current_time->tm_mon)+1, (current_time->tm_mday));
 
             bzero(th.hist, sizeof(th.hist));
             strcpy(th.hist, transactionBuffer);
@@ -835,4 +856,5 @@ void logout(int connectionFD, int accountNumber) {
     write(connectionFD, writeBuffer, sizeof(writeBuffer));
     read(connectionFD, readBuffer, sizeof(readBuffer));
 }
+
 

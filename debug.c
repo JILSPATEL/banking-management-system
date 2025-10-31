@@ -1,7 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include "allStruct.h"
+#include "AllStructure/allStruct.h"
 
 #define EMPPATH "Data/employees.txt"
 #define CUSPATH "Data/customers.txt"

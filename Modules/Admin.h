@@ -4,9 +4,9 @@
 int addEmployee(int connectionFD);
 void modifyCE(int connectionFD, int modifyChoice);
 void manageRole(int connectionFD);
-void changeAdminPassword(int connectionFD);   
 
-char readBuffer[4096], writeBuffer[4096];
+// Shared buffers are defined once in server.c
+extern char readBuffer[4096], writeBuffer[4096];
 
 void adminMenu(int connectionFD)
 {
@@ -32,10 +32,10 @@ label1:
     {
         bzero(writeBuffer, sizeof(writeBuffer));
         bzero(readBuffer, sizeof(readBuffer));
-        strcpy(writeBuffer, "\nInvalid credential^");
+        strcpy(writeBuffer, "\nInvalid Credential^");
         write(connectionFD, writeBuffer, sizeof(writeBuffer));
         read(connectionFD, readBuffer, sizeof(readBuffer));
-        goto label1;
+        return;
     }
 
     while(1)
@@ -83,10 +83,7 @@ label1:
                 manageRole(connectionFD);
                 break;
 
-            // case 4:
-            //     // Change Admin Password
-            //     changeAdminPassword(connectionFD);
-            //     break;
+            // Removed Change Admin Password (unused persistent admin_pass.txt)
 
             case 4:
                 // Logout
@@ -411,78 +408,6 @@ void manageRole(int connectionFD)
     read(connectionFD, readBuffer, sizeof(readBuffer));
     return ;
 }
-// ===================== Change Admin Password ==================
-void changeAdminPassword(int connectionFD)
-{
-    char currentPass[50], newPass[50], confirmPass[50];
-    char storedPass[50];
+// Change Admin Password feature removed as persistent file was unnecessary.
 
-    // Load stored password from file (optional persistence)
-    int file = open("admin_pass.txt", O_RDWR | O_CREAT, 0644);
-    if (file == -1) {
-        perror("Error opening admin password file");
-        return;
-    }
 
-    bzero(storedPass, sizeof(storedPass));
-    read(file, storedPass, sizeof(storedPass));
-    if(strlen(storedPass) == 0)
-        strcpy(storedPass, PASSWORD);  // default = admin
-
-    // Ask current password
-    bzero(writeBuffer, sizeof(writeBuffer));
-    strcpy(writeBuffer, "Enter current password: ");
-    write(connectionFD, writeBuffer, sizeof(writeBuffer));
-    bzero(readBuffer, sizeof(readBuffer));
-    read(connectionFD, readBuffer, sizeof(readBuffer));
-    strcpy(currentPass, readBuffer);
-
-    if(strcmp(currentPass, storedPass) != 0)
-    {
-        bzero(writeBuffer, sizeof(writeBuffer));
-        strcpy(writeBuffer, "Incorrect current password.^");
-        write(connectionFD, writeBuffer, sizeof(writeBuffer));
-        read(connectionFD, readBuffer, sizeof(readBuffer));
-        close(file);
-        return;
-    }
-
-    // Ask new password
-    bzero(writeBuffer, sizeof(writeBuffer));
-    strcpy(writeBuffer, "Enter new password: ");
-    write(connectionFD, writeBuffer, sizeof(writeBuffer));
-    bzero(readBuffer, sizeof(readBuffer));
-    read(connectionFD, readBuffer, sizeof(readBuffer));
-    strcpy(newPass, readBuffer);
-
-    // Confirm new password
-    bzero(writeBuffer, sizeof(writeBuffer));
-    strcpy(writeBuffer, "Confirm new password: ");
-    write(connectionFD, writeBuffer, sizeof(writeBuffer));
-    bzero(readBuffer, sizeof(readBuffer));
-    read(connectionFD, readBuffer, sizeof(readBuffer));
-    strcpy(confirmPass, readBuffer);
-
-    if(strcmp(newPass, confirmPass) != 0)
-    {
-        bzero(writeBuffer, sizeof(writeBuffer));
-        strcpy(writeBuffer, "Passwords do not match.^");
-        write(connectionFD, writeBuffer, sizeof(writeBuffer));
-        read(connectionFD, readBuffer, sizeof(readBuffer));
-        close(file);
-        return;
-    }
-
-    // Save new password
-    lseek(file, 0, SEEK_SET);
-    write(file, newPass, strlen(newPass));
-    ftruncate(file, strlen(newPass));
-    close(file);
-
-    bzero(writeBuffer, sizeof(writeBuffer));
-    strcpy(writeBuffer, "Password changed successfully.^");
-    write(connectionFD, writeBuffer, sizeof(writeBuffer));
-    read(connectionFD, readBuffer, sizeof(readBuffer));
-
-    printf("Admin password updated successfully.\n");
-}

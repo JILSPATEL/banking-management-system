@@ -44,11 +44,14 @@ sem_t *initializeSemaphore(int accountNumber);
 sem_t *sema;
 char semName[50];
 
-#include "allStruct.h"
-#include "Customer.h"
-#include "Admin.h"
-#include "Employee.h"
-#include "Manager.h"
+// Shared IO buffers for request/response handling
+char readBuffer[4096], writeBuffer[4096];
+
+#include "AllStructure/allStruct.h"
+#include "Modules/Customer.h"
+#include "Modules/Admin.h"
+#include "Modules/Employee.h"
+#include "Modules/Manager.h"
 
 #include <dirent.h>
 
