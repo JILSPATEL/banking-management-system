@@ -1,7 +1,7 @@
-```markdown
-# Final-BMS (Bank Management System)
 
-A C-based client–server Bank Management System using TCP sockets, file-backed storage, advisory file locks, and POSIX semaphores. Supports Customer, Employee, Manager, and Admin workflows.
+# Bank Management System
+
+- A C-based client–server Bank Management System using TCP sockets, file-backed storage, advisory file locks, and POSIX semaphores. Supports Customer, Employee, Manager, and Admin workflows.
 
 ## Features
 - Customer: deposit, withdraw, view balance, transfer, apply loan, change password, view transactions, feedback
