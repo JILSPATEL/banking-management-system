@@ -54,7 +54,7 @@ make
 
 ## Project Structure
 ```
-Final-BMS/
+Bank Management System/
 ├─ AllStructure/allStruct.h       # Core structs: Customer, Employee, LoanDetails, etc.
 ├─ Modules/                       # Menus & actions for each role
 │  ├─ Admin.h
