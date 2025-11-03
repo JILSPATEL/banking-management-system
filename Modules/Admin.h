@@ -406,6 +406,5 @@ void manageRole(int connectionFD)
     read(connectionFD, readBuffer, sizeof(readBuffer));
     return ;
 }
-// Change Admin Password feature removed as persistent file was unnecessary.
 
 
