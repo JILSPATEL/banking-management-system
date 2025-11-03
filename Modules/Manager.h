@@ -34,12 +34,6 @@ label1:
     strcpy(password, readBuffer);
 
 
-    // if(!sessionCheck(mngID))
-    // {
-    //     printf("Manager %d already logged in!\n", mngID);
-    //     return;
-    // }
-
     int mngLoginResult = loginManager(connectionFD, mngID, password);
     if(mngLoginResult == 1)
     {
@@ -199,7 +193,7 @@ void changeStatus(int connectionFD)
         if(cs.accountNumber == accNo)
         {
             bzero(writeBuffer, sizeof(writeBuffer));
-            strcpy(writeBuffer, "Enter 1 to Deactivate\nEnter 2 to activate\nEnter your choice: ");
+            strcpy(writeBuffer, "Enter (1) to Deactivate\nEnter (2) to activate\nEnter your choice: ");
             write(connectionFD, writeBuffer, sizeof(writeBuffer));
 
             bzero(readBuffer, sizeof(readBuffer));
