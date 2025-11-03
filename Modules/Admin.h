@@ -83,8 +83,6 @@ label1:
                 manageRole(connectionFD);
                 break;
 
-            // Removed Change Admin Password (unused persistent admin_pass.txt)
-
             case 4:
                 // Logout
                 bzero(writeBuffer, sizeof(writeBuffer));
