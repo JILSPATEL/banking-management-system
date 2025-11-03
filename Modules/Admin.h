@@ -24,7 +24,7 @@ label1:
     {
         bzero(writeBuffer, sizeof(writeBuffer));
         bzero(readBuffer, sizeof(readBuffer));
-        strcpy(writeBuffer, "\nLogin Successfully^");
+        strcpy(writeBuffer, "\nAdmin Login Successfully^");
         write(connectionFD, writeBuffer, sizeof(writeBuffer));
         read(connectionFD, readBuffer, sizeof(readBuffer));
     }
