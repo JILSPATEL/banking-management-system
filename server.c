@@ -128,7 +128,7 @@ int main()
             perror("Error");
         else
         {
-            if(fork() == 0)
+            if(fork() == 0)//create child process for each new user
             {
                 // Handling client connection
                 connectionHandler(connectionFileDescriptor);
