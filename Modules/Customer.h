@@ -290,6 +290,7 @@ void depositMoney(int connectionFD, int accountNumber){
             break;
         }
     }
+	//Moves file pointer to the record of current customer.
     int offset = lseek(file, -sizeof(struct Customer), SEEK_CUR);
 
     struct flock fl = {F_WRLCK, SEEK_SET, offset, sizeof(struct Customer), getpid()};
