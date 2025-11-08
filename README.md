@@ -55,13 +55,20 @@ make
 ## Project Structure
 ```
 Bank Management System/
-├─ AllStructure/allStruct.h       # Core structs: Customer, Employee, LoanDetails, etc.
+├─ AllStructure/                  # Core structs: Customer, Employee, LoanDetails, etc.
+|  └─ allStruct.h
 ├─ Modules/                       # Menus & actions for each role
 │  ├─ Admin.h
 │  ├─ Customer.h
 │  ├─ Employee.h
 │  └─ Manager.h
 ├─ Data/                          # File-backed storage
+|  ├─ employees.txt
+│  ├─ customers.txt
+│  ├─ trans_hist.txt
+│  ├─ feedback.txt
+│  ├─ loanDetails.txt
+│  └─ loanCounter.txt
 ├─ server.c                       # TCP server, routing, session mgmt
 ├─ client.c                       # CLI client
 ├─ Makefile (optional)
