@@ -42,10 +42,52 @@ make
 - Data/trans_hist.txt
 - Data/feedback.txt
 
-## Login
-- Admin: username/password = admin/admin (see `Modules/Admin.h`)
-- Employee/Manager: stored in `Data/employees.txt` (`role`: 0=Manager, 1=Employee)
-- Customer: stored in `Data/customers.txt` (`activeStatus`: 0/1)
+## Login Details
+
+### Admin
+- **Username:** `admin`
+- **Password:** `admin`
+- Credentials are hardcoded (see `Modules/Admin.h`)
+
+### Employee / Manager
+- Stored in `Data/employees.txt`
+- `role = 0` → Manager
+- `role = 1` → Employee
+
+### Customer
+- Stored in `Data/customers.txt`
+- `activeStatus = 1` → Active account
+
+## Testing / Sample Login Data
+
+Use the following credentials for testing all roles.
+
+### Customer Accounts
+| Account No | Password |
+|------------|----------|
+| 1001       | 1863     |
+| 1002       | 1043     |
+
+Customers must be active (`activeStatus = 1`) in `Data/customers.txt`.
+
+### Employee
+| Employee ID | Password | Role     |
+|-------------|----------|----------|
+| 456         | 456      | Employee |
+
+Stored in `Data/employees.txt` with `role = 1`.
+
+### Manager
+| Manager ID | Password | Role    |
+|------------|----------|---------|
+| 123        | 123      | Manager |
+
+Stored in `Data/employees.txt` with `role = 0`.
+
+### Admin
+| Username | Password |
+|----------|----------|
+| `admin`  | `admin`  |
 
 ## Notes
 - Semaphores live in `/dev/shm` as `/sem_<ID>`; server cleans stale semaphores on start
@@ -55,20 +97,13 @@ make
 ## Project Structure
 ```
 Bank Management System/
-├─ AllStructure/                  # Core structs: Customer, Employee, LoanDetails, etc.
-|  └─ allStruct.h
+├─ AllStructure/allStruct.h       # Core structs: Customer, Employee, LoanDetails, etc.
 ├─ Modules/                       # Menus & actions for each role
 │  ├─ Admin.h
 │  ├─ Customer.h
 │  ├─ Employee.h
 │  └─ Manager.h
 ├─ Data/                          # File-backed storage
-|  ├─ employees.txt
-│  ├─ customers.txt
-│  ├─ trans_hist.txt
-│  ├─ feedback.txt
-│  ├─ loanDetails.txt
-│  └─ loanCounter.txt
 ├─ server.c                       # TCP server, routing, session mgmt
 ├─ client.c                       # CLI client
 ├─ Makefile (optional)
