@@ -597,6 +597,14 @@ void transferFunds(int connectionFD, int sourceAccount, int destAccount, float a
     char readBuffer[4096], writeBuffer[4096], transactionBuffer[1024];
     struct Customer srcCustomer, dstCustomer;
     struct trans_histroy th;
+
+	if (sourceAccount == destAccount) {
+        sprintf(writeBuffer, "You Can't Transfer Money to Yourself.^");
+        write(connectionFD, writeBuffer, sizeof(writeBuffer));
+        read(connectionFD, readBuffer, sizeof(readBuffer));
+        return;
+    }
+	
     int srcFound = 0, dstFound = 0;
     int srcOffset = -1, dstOffset = -1;
 
@@ -653,7 +661,7 @@ void transferFunds(int connectionFD, int sourceAccount, int destAccount, float a
         read(connectionFD, readBuffer, sizeof(readBuffer));
         goto unlock_exit;
     }
-
+	
     // --- Check funds ---
     if (srcCustomer.balance < amount) {
         sprintf(writeBuffer, "Insufficient funds in source account.^");
