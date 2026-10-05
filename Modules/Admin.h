@@ -24,7 +24,7 @@ label1:
     {
         bzero(writeBuffer, sizeof(writeBuffer));
         bzero(readBuffer, sizeof(readBuffer));
-        strcpy(writeBuffer, "\nLogin Successfully^");
+        strcpy(writeBuffer, "\nAdmin Login Successfully^");
         write(connectionFD, writeBuffer, sizeof(writeBuffer));
         read(connectionFD, readBuffer, sizeof(readBuffer));
     }
@@ -82,8 +82,6 @@ label1:
                 // Manage User Roles
                 manageRole(connectionFD);
                 break;
-
-            // Removed Change Admin Password (unused persistent admin_pass.txt)
 
             case 4:
                 // Logout
@@ -408,6 +406,5 @@ void manageRole(int connectionFD)
     read(connectionFD, readBuffer, sizeof(readBuffer));
     return ;
 }
-// Change Admin Password feature removed as persistent file was unnecessary.
 
 
