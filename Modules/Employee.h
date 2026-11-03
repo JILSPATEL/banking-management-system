@@ -234,6 +234,39 @@ void addCustomer(int connectionFD) {
     read(connectionFD, readBuffer, sizeof(readBuffer));
     customer.balance = atof(readBuffer);
 
+    struct flock customerLock = {F_WRLCK, SEEK_SET, 0, 0, getpid()};
+    if (fcntl(file, F_SETLKW, &customerLock) == -1) {
+        perror("Error locking customer file");
+        close(fp);
+        close(file);
+        strcpy(writeBuffer, "Unable to verify account number. Customer was not added.^");
+        write(connectionFD, writeBuffer, sizeof(writeBuffer));
+        read(connectionFD, readBuffer, sizeof(readBuffer));
+        return;
+    }
+
+    struct Customer existingCustomer;
+    int duplicateAccount = 0;
+    lseek(file, 0, SEEK_SET);
+    while (read(file, &existingCustomer, sizeof(existingCustomer)) == sizeof(existingCustomer)) {
+        if (existingCustomer.accountNumber == customer.accountNumber) {
+            duplicateAccount = 1;
+            break;
+        }
+    }
+
+    if (duplicateAccount) {
+        customerLock.l_type = F_UNLCK;
+        fcntl(file, F_SETLK, &customerLock);
+        close(fp);
+        close(file);
+        bzero(writeBuffer, sizeof(writeBuffer));
+        strcpy(writeBuffer, "Account number already exists. Customer was not added.^");
+        write(connectionFD, writeBuffer, sizeof(writeBuffer));
+        read(connectionFD, readBuffer, sizeof(readBuffer));
+        return;
+    }
+
     bzero(transactionBuffer, sizeof(transactionBuffer));
     sprintf(transactionBuffer, "%.2f Opening Balance %02d:%02d:%02d %d-%d-%d\n", customer.balance, current_time->tm_hour, current_time->tm_min,current_time->tm_sec, (current_time->tm_year)+1900, (current_time->tm_mon)+1, current_time->tm_mday);
     
@@ -247,6 +280,8 @@ void addCustomer(int connectionFD) {
     customer.activeStatus = 1;
 
     write(file, &customer, sizeof(customer));
+    customerLock.l_type = F_UNLCK;
+    fcntl(file, F_SETLK, &customerLock);
     close(file);
 
     bzero(readBuffer, sizeof(readBuffer));
@@ -506,5 +541,4 @@ int changeEMPPassword(int connectionFD, int empID)
     printf("Employee %d changed password\n", empID);
     return 1;
 }
-
 
